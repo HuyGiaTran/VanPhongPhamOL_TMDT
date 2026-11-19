@@ -17,5 +17,12 @@ namespace VanPhongPhamOnline.ViewModels
 
         [MaxLength(50, ErrorMessage = "Ghi chú tối đa 50 ký tự")]
         public string? GhiChu { get; set; }
+
+        [Display(Name = "Phương thức thanh toán")]
+        public string? PaymentMethod { get; set; }
+
+        [Display(Name = "Mã giảm giá")]
+        [MaxLength(20, ErrorMessage = "Mã giảm giá tối đa 20 ký tự")]
+        public string? MaVoucher { get; set; }
     }
 }

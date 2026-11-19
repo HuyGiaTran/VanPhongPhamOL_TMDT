@@ -175,6 +175,21 @@
             </div>
 
             <div class="detail-row">
+                <div class="detail-label">Số lượng tồn kho:</div>
+                <div class="detail-value @(Model.SoLuongTon > 0 ? "text-success" : "text-danger") fw-bold">
+                    @Model.SoLuongTon
+                    @if (Model.SoLuongTon > 0)
+                    {
+                        <span class="badge bg-success ms-2">Còn hàng</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger ms-2">Hết hàng</span>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-row">
                 <div class="detail-label">Mô tả đơn vị:</div>
                 <div class="detail-value">@Html.DisplayFor(model => model.MoTaDonVi)</div>
             </div>

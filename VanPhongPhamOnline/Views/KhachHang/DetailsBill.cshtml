@@ -73,6 +73,15 @@
                     </table>
                 </div>
                 <div class="card-footer text-end">
+                    @if (bill.MaTrangThai == 1)
+                    {
+                        <form asp-action="HuyDon" asp-controller="KhachHang" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@bill.MaHd" />
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này? Tồn kho sẽ được hoàn trả.')">
+                                <i class="fa fa-times me-1"></i> Hủy đơn hàng
+                            </button>
+                        </form>
+                    }
                     <a asp-action="Profile" class="btn btn-secondary btn-sm">
                         <i class="fa fa-arrow-left me-1"></i> Quay lại hồ sơ
                     </a>

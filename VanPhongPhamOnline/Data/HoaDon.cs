@@ -32,6 +32,10 @@ public partial class HoaDon
 
     public string? GhiChu { get; set; }
 
+    public string? MaVoucher { get; set; }
+
+    public double GiamGiaVoucher { get; set; } = 0;
+
     public virtual ICollection<ChiTietHd> ChiTietHds { get; set; } = new List<ChiTietHd>();
 
     [BindNever]

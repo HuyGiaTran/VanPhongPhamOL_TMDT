@@ -176,6 +176,7 @@
                             <th>Đơn giá</th>
                             <th>Giảm giá</th>
                             <th>Ngày sản xuất</th>
+                            <th>Số lượng tồn</th>
                             <th>Số lần xem</th>
                             <th style="width: 220px; text-align: center;">Thao tác</th>
                         </tr>
@@ -198,6 +199,19 @@
                                 <td>@item.DonGia?.ToString("N0") VNĐ</td>
                                 <td>@item.GiamGia.ToString("N2")%</td>
                                 <td>@item.NgaySx.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <span class="@(item.SoLuongTon > 0 ? "text-success" : "text-danger") fw-bold">
+                                        @item.SoLuongTon
+                                        @if (item.SoLuongTon > 0)
+                                        {
+                                            <span class="badge bg-success ms-1">Còn hàng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger ms-1">Hết hàng</span>
+                                        }
+                                    </span>
+                                </td>
                                 <td>@Html.DisplayFor(modelItem => item.SoLanXem)</td>
                                 <td style="text-align: center; white-space: nowrap;">
                                     <a href="@Url.Action("Details", "QuanLyHangHoa", new { id = item.MaHh })" class="btn-action btn-info">Chi tiết</a>

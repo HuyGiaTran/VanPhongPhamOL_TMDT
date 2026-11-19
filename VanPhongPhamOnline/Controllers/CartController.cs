@@ -32,23 +32,39 @@ namespace VanPhongPhamOnline.Controllers
         [Authorize(AuthenticationSchemes = AppAuth.CustomerScheme)]
         public IActionResult Index()
         {
-            return View(Cart);
+            var cart = Cart;
+            // Populate tồn kho thực tế từ DB cho từng sản phẩm trong giỏ
+            foreach (var item in cart)
+            {
+                var hangHoa = db.HangHoas.SingleOrDefault(p => p.MaHh == item.MaHH);
+                item.SoLuongTon = hangHoa?.SoLuongTon ?? 0;
+            }
+            SaveCart(cart);
+            return View(cart);
         }
 
         public IActionResult AddToCart(int id, int quantity = 1)
         {
             if (quantity <= 0) quantity = 1;
 
+            var hangHoa = db.HangHoas.SingleOrDefault(p => p.MaHh == id);
+            if (hangHoa == null)
+            {
+                TempData["Message"] = $"Không tìm thấy hàng hóa có mã {id}";
+                return RedirectToAction("PageNotFound", "Home");
+            }
+
+            // Kiểm tra tồn kho
+            if (hangHoa.SoLuongTon < quantity)
+            {
+                TempData["Message"] = $"Chỉ còn {hangHoa.SoLuongTon} sản phẩm '{hangHoa.TenHh}' trong kho. Không thể thêm {quantity} sản phẩm.";
+                return RedirectToAction("Index");
+            }
+
             var gioHang = Cart;
             var item = gioHang.SingleOrDefault(p => p.MaHH == id);
             if (item == null)
             {
-                var hangHoa = db.HangHoas.SingleOrDefault(p => p.MaHh == id);
-                if (hangHoa == null)
-                {
-                    TempData["Message"] = $"Không tìm thấy hàng hóa có mã {id}";
-                    return RedirectToAction("PageNotFound", "Home");
-                }
                 item = new CartItem
                 {
                     MaHH = hangHoa.MaHh,
@@ -61,7 +77,14 @@ namespace VanPhongPhamOnline.Controllers
             }
             else
             {
-                item.SoLuong += quantity;
+                // Kiểm tra tổng số lượng trong giỏ không vượt quá tồn kho
+                int tongSoLuong = item.SoLuong + quantity;
+                if (hangHoa.SoLuongTon < tongSoLuong)
+                {
+                    TempData["Message"] = $"Chỉ còn {hangHoa.SoLuongTon} sản phẩm '{hangHoa.TenHh}' trong kho. Bạn đã có {item.SoLuong} sản phẩm trong giỏ.";
+                    return RedirectToAction("Index");
+                }
+                item.SoLuong = tongSoLuong;
             }
             SaveCart(gioHang);
             return RedirectToAction("Index");
@@ -106,9 +129,20 @@ namespace VanPhongPhamOnline.Controllers
             if (item != null)
             {
                 if (quantity <= 0)
+                {
                     gioHang.Remove(item);
+                }
                 else
+                {
+                    // Kiểm tra tồn kho trước khi cập nhật số lượng
+                    var hangHoa = db.HangHoas.SingleOrDefault(p => p.MaHh == id);
+                    if (hangHoa != null && hangHoa.SoLuongTon < quantity)
+                    {
+                        TempData["Message"] = $"Chỉ còn {hangHoa.SoLuongTon} sản phẩm '{hangHoa.TenHh}' trong kho.";
+                        return RedirectToAction("Index");
+                    }
                     item.SoLuong = quantity;
+                }
 
                 SaveCart(gioHang);
             }
@@ -151,7 +185,9 @@ namespace VanPhongPhamOnline.Controllers
                 return View(cart);
             }
 
-            var hoaDon = TaoHoaDon(model, cart, "COD");
+            var thanhToan = string.IsNullOrWhiteSpace(model.PaymentMethod) ? "COD" : model.PaymentMethod;
+
+            var hoaDon = TaoHoaDon(model, cart, thanhToan, model.MaVoucher);
             if (hoaDon == null)
             {
                 return Content("Không xác định được khách hàng.");
@@ -167,13 +203,30 @@ namespace VanPhongPhamOnline.Controllers
 
         /// <summary>
         /// Lưu hóa đơn + chi tiết hóa đơn từ giỏ hàng, sau đó xóa giỏ hàng.
+        /// Kiểm tra và trừ tồn kho trước khi lưu đơn hàng.
         /// </summary>
-        private HoaDon? TaoHoaDon(CheckoutVM model, List<CartItem> cart, string cachThanhToan)
+        private HoaDon? TaoHoaDon(CheckoutVM model, List<CartItem> cart, string cachThanhToan, string? maVoucher = null)
         {
             var maKH = User.FindFirst("MaKH")?.Value;
             if (string.IsNullOrEmpty(maKH))
             {
                 return null;
+            }
+
+            // Kiểm tra tồn kho cho tất cả sản phẩm trong giỏ trước khi đặt hàng
+            foreach (var item in cart)
+            {
+                var hangHoa = db.HangHoas.SingleOrDefault(p => p.MaHh == item.MaHH);
+                if (hangHoa == null)
+                {
+                    TempData["Message"] = $"Sản phẩm mã {item.MaHH} không còn tồn tại.";
+                    return null;
+                }
+                if (hangHoa.SoLuongTon < item.SoLuong)
+                {
+                    TempData["Message"] = $"Sản phẩm '{hangHoa.TenHh}' chỉ còn {hangHoa.SoLuongTon} sản phẩm trong kho, không đủ {item.SoLuong} sản phẩm bạn yêu cầu.";
+                    return null;
+                }
             }
 
             // Nếu tick "Giống thông tin khách hàng" hoặc bỏ trống thì lấy thông tin từ tài khoản
@@ -182,6 +235,15 @@ namespace VanPhongPhamOnline.Controllers
             var diaChi = dungThongTinKhachHang || string.IsNullOrWhiteSpace(model.DiaChi)
                 ? User.FindFirst("DiaChi")?.Value
                 : model.DiaChi;
+
+            // Tính tiền giảm từ voucher (nếu có)
+            double giamGiaVoucher = 0;
+            if (!string.IsNullOrWhiteSpace(maVoucher))
+            {
+                // TODO: Sau khi có bảng Voucher, validate mã tại đây
+                // Hiện tại chỉ lưu mã vào đơn hàng, chưa áp dụng giảm giá thực tế
+                giamGiaVoucher = 0;
+            }
 
             var hoaDon = new HoaDon
             {
@@ -195,7 +257,9 @@ namespace VanPhongPhamOnline.Controllers
                 MaTrangThai = 1,
                 HoTenNguoiNhan = hoTen,
                 GhiChu = model.GhiChu,
-                MaNv = null
+                MaNv = null,
+                MaVoucher = string.IsNullOrWhiteSpace(maVoucher) ? null : maVoucher,
+                GiamGiaVoucher = giamGiaVoucher
             };
 
             foreach (var item in cart)
@@ -210,6 +274,14 @@ namespace VanPhongPhamOnline.Controllers
             }
 
             db.HoaDons.Add(hoaDon);
+
+            // Trừ tồn kho cho từng sản phẩm
+            foreach (var item in cart)
+            {
+                var hangHoa = db.HangHoas.Single(p => p.MaHh == item.MaHH);
+                hangHoa.SoLuongTon -= item.SoLuong;
+            }
+
             db.SaveChanges();
 
             HttpContext.Session.Remove(MySetting.CART_KEY);
@@ -260,7 +332,7 @@ namespace VanPhongPhamOnline.Controllers
                 }
 
                 // Lưu hóa đơn sau khi PayPal thanh toán thành công
-                var hoaDon = TaoHoaDon(model, Cart, "PAYPAL");
+                var hoaDon = TaoHoaDon(model, Cart, "PAYPAL", model.MaVoucher);
                 if (hoaDon == null)
                 {
                     return BadRequest(new { Message = "Không xác định được khách hàng." });

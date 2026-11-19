@@ -16,6 +16,11 @@
             </div>
             <div class="text-center py-4">
                 <a asp-action="Detail" asp-controller="HangHoa" asp-route-id="@item.MaHH" class="h6 text-decoration-none text-truncate">@item.TenHH</a>
+                <p class="mb-2">
+                    <span class="@(item.SoLuongTon > 0 ? "badge bg-success" : "badge bg-danger") px-2 py-1 small">
+                        @(item.SoLuongTon > 0 ? $"Còn hàng ({item.SoLuongTon})" : "Hết hàng")
+                    </span>
+                </p>
                 <div class="d-flex align-items-center justify-content-center mt-2">
                     <h5>@item.DonGia</h5><h6 class="text-muted ml-2"><del>@item.DonGia</del></h6>
                 </div>

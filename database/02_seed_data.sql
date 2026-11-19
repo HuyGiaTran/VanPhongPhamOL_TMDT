@@ -10,7 +10,9 @@ GO
 INSERT INTO TrangThai (MaTrangThai, TenTrangThai, DaThanhToan, MoTa)
 VALUES
 (1, N'Chưa xác nhận', 0, N'Đơn hàng mới, chờ nhân viên xác nhận'),
-(2, N'Đã xác nhận',   0, N'Nhân viên đã xác nhận đơn hàng');
+(2, N'Đã xác nhận',   0, N'Nhân viên đã xác nhận đơn hàng'),
+(3, N'Đã hủy',        0, N'Khách hàng hoặc admin đã hủy đơn hàng'),
+(4, N'Đã giao',       1, N'Đơn hàng đã được giao thành công');
 
 -- Phòng ban
 INSERT INTO PhongBan (MaPB, TenPB, ThongTin)

@@ -152,6 +152,7 @@ namespace VanPhongPhamOnline.Controllers.Admin
             existingHangHoa.GiamGia = hangHoa.GiamGia;
             existingHangHoa.NgaySx = hangHoa.NgaySx;
             existingHangHoa.SoLanXem = hangHoa.SoLanXem;
+            existingHangHoa.SoLuongTon = hangHoa.SoLuongTon;
             existingHangHoa.MoTaDonVi = hangHoa.MoTaDonVi;
             existingHangHoa.TenAlias = hangHoa.TenAlias;
             existingHangHoa.MoTa = hangHoa.MoTa;

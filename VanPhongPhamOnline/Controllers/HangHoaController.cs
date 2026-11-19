@@ -35,7 +35,8 @@ namespace VanPhongPhamOnline.Controllers
                 DonGia = p.DonGia ?? 0,
                 Hinh = p.Hinh ?? "",
                 MoTaNgan = p.MoTaDonVi ?? "",
-                TenLoai = p.MaLoaiNavigation.TenLoai
+                TenLoai = p.MaLoaiNavigation.TenLoai,
+                SoLuongTon = p.SoLuongTon
             }).ToList();
 
             /* Đưa thông tin phân trang vào ViewBag */
@@ -64,7 +65,8 @@ namespace VanPhongPhamOnline.Controllers
                 DonGia = p.DonGia ?? 0,
                 Hinh = p.Hinh ?? "",
                 MoTaNgan = p.MoTaDonVi ?? "",
-                TenLoai = p.MaLoaiNavigation.TenLoai
+                TenLoai = p.MaLoaiNavigation.TenLoai,
+                SoLuongTon = p.SoLuongTon
             });
 
             return View(result);
@@ -92,8 +94,8 @@ namespace VanPhongPhamOnline.Controllers
                 Hinh = data.Hinh ?? string.Empty,
                 MoTaNgan = data.MoTaDonVi ?? string.Empty,
                 TenLoai = data.MaLoaiNavigation.TenLoai,
-                SoLuongTon = 10, // Check again
-                DiemDanhGia = 5, // Check again
+                SoLuongTon = data.SoLuongTon,
+                DiemDanhGia = 5
             };
             return View(result);
         }

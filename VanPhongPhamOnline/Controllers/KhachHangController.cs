@@ -355,6 +355,52 @@ namespace VanPhongPhamOnline.Controllers
         #endregion
 
         #region Order history
+        #region Hủy đơn hàng
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult HuyDon(int id)
+        {
+            var maKH = User.FindFirst("MaKH")?.Value;
+            if (string.IsNullOrEmpty(maKH)) return Unauthorized();
+
+            var hoaDon = db.HoaDons
+                .Include(h => h.ChiTietHds)
+                .FirstOrDefault(h => h.MaHd == id && h.MaKh == maKH);
+            if (hoaDon == null)
+            {
+                TempData["Error"] = "Không tìm thấy đơn hàng hoặc bạn không có quyền hủy đơn này.";
+                return RedirectToAction("Details");
+            }
+
+            // Chỉ cho phép hủy khi trạng thái là "Chưa xác nhận" (MaTrangThai = 1)
+            if (hoaDon.MaTrangThai != 1)
+            {
+                TempData["Error"] = "Chỉ có thể hủy đơn hàng khi trạng thái là 'Chưa xác nhận'.";
+                return RedirectToAction("Details");
+            }
+
+            // Hoàn trả tồn kho cho từng sản phẩm trong đơn
+            foreach (var ct in hoaDon.ChiTietHds)
+            {
+                var hangHoa = db.HangHoas.SingleOrDefault(p => p.MaHh == ct.MaHh);
+                if (hangHoa != null)
+                {
+                    hangHoa.SoLuongTon += ct.SoLuong;
+                }
+            }
+
+            // Cập nhật trạng thái đơn hàng thành "Đã hủy" (giả sử mã trạng thái 4 = Đã hủy, nếu chưa có sẽ dùng 3)
+            // Tạm thời dùng MaTrangThai = 3 (cần thêm trạng thái "Đã hủy" vào CSDL)
+            hoaDon.MaTrangThai = 3;
+
+            db.SaveChanges();
+
+            TempData["Success"] = $"Đã hủy đơn hàng #{hoaDon.MaHd} thành công. Tồn kho đã được hoàn trả.";
+            return RedirectToAction("Details");
+        }
+        #endregion
+
         [Authorize]
         public IActionResult Details(int pageNumber = 1, int pageSize = 4)
         {
@@ -395,6 +441,7 @@ namespace VanPhongPhamOnline.Controllers
                 CachVanChuyen = h.CachVanChuyen,
                 PhiVanChuyen = h.PhiVanChuyen,
                 TenTrangThai = h.MaTrangThaiNavigation?.TenTrangThai,
+                MaTrangThai = h.MaTrangThai,
                 TenNhanVien = h.MaNvNavigation?.HoTenNv,
                 GhiChu = h.GhiChu,
                 TongTien = h.TongTien,

@@ -24,6 +24,9 @@ builder.Services.AddDbContext<MultiShopContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MultiShop"));
 });
 
+// Tu dong them cot SoLuongTon vao database khi ung dung khoi dong (neu chua co)
+builder.Services.AddHostedService<DatabaseInitializer>();
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

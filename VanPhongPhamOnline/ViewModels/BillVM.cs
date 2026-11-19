@@ -46,6 +46,9 @@ namespace VanPhongPhamOnline.ViewModels
         [Display(Name = "Trạng thái")]
         public string? TenTrangThai { get; set; }
 
+        [Display(Name = "Mã trạng thái")]
+        public int MaTrangThai { get; set; }
+
         [Display(Name = "Nhân viên phụ trách")]
         public string? TenNhanVien { get; set; }
 

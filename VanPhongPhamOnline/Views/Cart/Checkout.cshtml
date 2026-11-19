@@ -38,6 +38,15 @@
                     <label class="form-label">Ghi chú</label>
                     <textarea name="GhiChu" class="form-control" rows="5" placeholder="Ghi chú..." maxlength="50"></textarea>
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mã giảm giá (nếu có)</label>
+                    <div class="input-group">
+                        <input type="text" name="MaVoucher" class="form-control" placeholder="Nhập mã giảm giá..." maxlength="20">
+                        <button class="btn btn-outline-secondary" type="button">Áp dụng</button>
+                    </div>
+                    <small class="text-muted">Nhập mã giảm giá để nhận ưu đãi khi thanh toán.</small>
+                </div>
             </div>
 
             <!-- Tóm tắt đơn hàng -->
@@ -84,24 +93,33 @@
                 </div>
 
                 <!-- Phương thức thanh toán -->
-                @* <div class="mb-3">
+                <div class="mb-3">
                     <label class="form-label fw-bold">Phương thức thanh toán</label>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input" name="PaymentMethod" value="Bank">
-                        <label class="form-check-label">Chuyển khoản ngân hàng</label>
+                        <input type="radio" class="form-check-input payment-method" name="PaymentMethod" value="BANK" id="payBank" checked>
+                        <label class="form-check-label" for="payBank">Chuyển khoản ngân hàng</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input" name="PaymentMethod" value="COD">
-                        <label class="form-check-label">Thanh toán khi nhận hàng</label>
+                        <input type="radio" class="form-check-input payment-method" name="PaymentMethod" value="COD" id="payCod">
+                        <label class="form-check-label" for="payCod">Thanh toán khi nhận hàng (COD)</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input" name="PaymentMethod" value="Paypal">
-                        <label class="form-check-label">PayPal</label>
+                        <input type="radio" class="form-check-input payment-method" name="PaymentMethod" value="PAYPAL" id="payPal">
+                        <label class="form-check-label" for="payPal">PayPal</label>
                     </div>
-                </div> *@
+                </div>
+
+                <!-- Thông tin tài khoản ngân hàng (hiện khi chọn Chuyển khoản) -->
+                <div id="bankInfo" class="mb-3 p-3 bg-light rounded border">
+                    <h6 class="fw-bold">Thông tin tài khoản ngân hàng</h6>
+                    <p class="mb-1"><strong>Ngân hàng:</strong> Vietcombank (VCB)</p>
+                    <p class="mb-1"><strong>Chủ tài khoản:</strong> CÔNG TY VĂN PHÒNG PHẨM ONLINE</p>
+                    <p class="mb-1"><strong>Số tài khoản:</strong> 1234567890</p>
+                    <p class="mb-0 text-muted">Sau khi chuyển khoản, đơn hàng sẽ ở trạng thái "Chưa xác nhận" chờ admin duyệt.</p>
+                </div>
 
                 <!-- Nút đặt hàng -->
-                <button type="submit" class="btn btn-primary w-100 mb-3">Thanh toán trực tiếp khi nhận hàng</button>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Đặt hàng</button>
 
                 <!-- PayPal button -->
                 <div id="paypal-button-container"></div>
@@ -117,6 +135,14 @@
             $("#GiongKhachHang").change(function () {
                 $(".delivery-info").toggleClass("d-none", $(this).is(":checked"));
             });
+
+            // Toggle hiển thị thông tin ngân hàng khi chọn phương thức thanh toán
+            function toggleBankInfo() {
+                const selected = $("input[name='PaymentMethod']:checked").val();
+                $("#bankInfo").toggle(selected === "BANK");
+            }
+            $("input[name='PaymentMethod']").change(toggleBankInfo);
+            toggleBankInfo();
 
             paypal.Buttons({
                 style: { color: 'silver', layout: 'vertical' },

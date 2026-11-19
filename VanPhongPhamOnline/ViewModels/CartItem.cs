@@ -7,6 +7,7 @@
         public string Hinh { get; set; }
         public double DonGia { get; set; }
         public int SoLuong { get; set; }
+        public int SoLuongTon { get; set; }
         public double ThanhTien => SoLuong * DonGia;
     }
 }

@@ -95,6 +95,8 @@ CREATE TABLE HoaDon (
     MaTrangThai INT NOT NULL,
     MaNV NVARCHAR(50),
     GhiChu NVARCHAR(50),
+    MaVoucher NVARCHAR(50),
+    GiamGiaVoucher FLOAT NOT NULL DEFAULT 0,
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     FOREIGN KEY (MaTrangThai) REFERENCES TrangThai(MaTrangThai),
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
@@ -113,6 +115,7 @@ CREATE TABLE HangHoa (
     SoLanXem INT NOT NULL,
     MoTa NVARCHAR(MAX),
     MaNCC NVARCHAR(50) NOT NULL,
+    SoLuongTon INT NOT NULL DEFAULT 0,
     FOREIGN KEY (MaLoai) REFERENCES Loai(MaLoai),
     FOREIGN KEY (MaNCC) REFERENCES NhaCungCap(MaNCC)
 );

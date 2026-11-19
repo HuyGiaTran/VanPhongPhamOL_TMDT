@@ -32,6 +32,11 @@
                     <small class="pt-1">(99 Reviews)</small>
                 </div>
                 <h3 class="font-weight-semi-bold mb-4">@Model.DonGia VND</h3>
+                <p class="mb-2">
+                    <span class="@(Model.SoLuongTon > 0 ? "badge bg-success" : "badge bg-danger") px-3 py-2">
+                        @(Model.SoLuongTon > 0 ? $"Còn hàng: {Model.SoLuongTon} sản phẩm" : "Hết hàng")
+                    </span>
+                </p>
                 <p class="mb-4">
                     @Model.MoTaNgan
                 </p>

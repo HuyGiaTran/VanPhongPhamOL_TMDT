@@ -30,6 +30,8 @@ public partial class HangHoa
 
     public string MaNcc { get; set; } = null!;
 
+    public int SoLuongTon { get; set; } = 0;
+
     public virtual ICollection<ChiTietHd> ChiTietHds { get; set; } = new List<ChiTietHd>();
 
     [ValidateNever]

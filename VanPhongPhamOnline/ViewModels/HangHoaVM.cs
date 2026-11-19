@@ -12,5 +12,6 @@
         public int DiemDanhGia { get; set; }
         public int SoDanhGia { get; set; }
         public int SoLuongTon { get; set; }
+        public bool ConHang => SoLuongTon > 0;
     }
 }

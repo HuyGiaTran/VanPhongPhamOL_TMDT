@@ -167,7 +167,7 @@
                                 <td>@tongTienDict[item.MaHd].ToString("N0")</td>
                                 <td>@item.GhiChu</td>
                                 <td>@item.MaKhNavigation?.MaKh</td>
-                                <td>@item.MaTrangThaiNavigation?.MaTrangThai</td>
+                                <td>@item.MaTrangThaiNavigation?.TenTrangThai</td>
                                 <td style="text-align: center; white-space: nowrap;">
                                     <a href="@Url.Action("Details", "HoaDon", new { id = item.MaHd })" class="btn-action btn-info">Chi tiết</a>
                                     <a href="@Url.Action("Edit", "HoaDon", new { id = item.MaHd })" class="btn-action btn-warning">Sửa</a>
