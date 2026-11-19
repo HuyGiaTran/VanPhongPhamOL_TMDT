@@ -65,8 +65,9 @@ namespace VanPhongPhamOnline.Controllers
 
             maGiamGia = maGiamGia.Trim();
 
+            // Tìm voucher theo cả Mã Voucher (khóa chính) hoặc Mã giảm giá (mã khách hàng nhập)
             var voucher = db.Vouchers.FirstOrDefault(v =>
-                v.MaGiamGia == maGiamGia &&
+                (v.MaGiamGia == maGiamGia || v.MaVoucher == maGiamGia) &&
                 v.TrangThai == true &&
                 v.NgayBatDau <= DateTime.Now &&
                 v.NgayKetThuc >= DateTime.Now &&
@@ -347,7 +348,7 @@ namespace VanPhongPhamOnline.Controllers
             if (!string.IsNullOrWhiteSpace(maVoucher))
             {
                 var voucher = db.Vouchers.FirstOrDefault(v =>
-                    v.MaGiamGia == maVoucher &&
+                    (v.MaGiamGia == maVoucher || v.MaVoucher == maVoucher) &&
                     v.TrangThai == true &&
                     v.NgayBatDau <= DateTime.Now &&
                     v.NgayKetThuc >= DateTime.Now &&
