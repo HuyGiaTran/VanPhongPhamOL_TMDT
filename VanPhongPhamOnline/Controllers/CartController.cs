@@ -300,6 +300,14 @@ namespace VanPhongPhamOnline.Controllers
                 return Redirect("/");
             }
 
+            // Kiểm tra khách hàng đã đăng nhập chưa (claim MaKH)
+            var maKH = User.FindFirst("MaKH")?.Value;
+            if (string.IsNullOrEmpty(maKH))
+            {
+                TempData["Message"] = "Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục thanh toán.";
+                return RedirectToAction("DangNhap", "KhachHang", new { ReturnUrl = "/Cart/Checkout" });
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.PaypalClientId = _paypalClient.ClientId;
@@ -316,7 +324,13 @@ namespace VanPhongPhamOnline.Controllers
             var hoaDon = TaoHoaDon(model, cart, thanhToan, maVoucher);
             if (hoaDon == null)
             {
-                return Content("Không xác định được khách hàng.");
+                // Nếu lỗi không xác định khách hàng, redirect về login
+                if (string.IsNullOrEmpty(User.FindFirst("MaKH")?.Value))
+                {
+                    TempData["Message"] = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+                    return RedirectToAction("DangNhap", "KhachHang", new { ReturnUrl = "/Cart/Checkout" });
+                }
+                return View(cart);
             }
 
             // Xóa voucher đã áp dụng khỏi session sau khi đặt hàng thành công
@@ -340,6 +354,7 @@ namespace VanPhongPhamOnline.Controllers
             var maKH = User.FindFirst("MaKH")?.Value;
             if (string.IsNullOrEmpty(maKH))
             {
+                TempData["Message"] = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
                 return null;
             }
 
