@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using VanPhongPhamOnline.Data;
 using VanPhongPhamOnline.Helpers;
 
@@ -93,6 +94,24 @@ namespace VanPhongPhamOnline.Controllers.Admin
                 model.GiamGia = 0;
                 model.SoLanXem = 0;
 
+                // Tự động sinh Slug nếu để trống
+                if (string.IsNullOrWhiteSpace(model.Slug))
+                {
+                    model.Slug = GenerateSlug(model.TenHh);
+                }
+
+                // Nếu MetaTitle trống, gán mặc định là TenHh
+                if (string.IsNullOrWhiteSpace(model.MetaTitle))
+                {
+                    model.MetaTitle = model.TenHh;
+                }
+
+                // Nếu MetaDescription trống, gán mặc định là MoTaDonVi hoặc MoTa
+                if (string.IsNullOrWhiteSpace(model.MetaDescription))
+                {
+                    model.MetaDescription = !string.IsNullOrWhiteSpace(model.MoTaDonVi) ? model.MoTaDonVi : model.MoTa;
+                }
+
                 if (HinhUpload != null && HinhUpload.Length > 0)
                 {
                     model.Hinh = MyUlti.UploadHinh(HinhUpload, HinhFolder);
@@ -156,6 +175,27 @@ namespace VanPhongPhamOnline.Controllers.Admin
             existingHangHoa.MoTaDonVi = hangHoa.MoTaDonVi;
             existingHangHoa.TenAlias = hangHoa.TenAlias;
             existingHangHoa.MoTa = hangHoa.MoTa;
+            existingHangHoa.Slug = hangHoa.Slug;
+            existingHangHoa.MetaTitle = hangHoa.MetaTitle;
+            existingHangHoa.MetaDescription = hangHoa.MetaDescription;
+
+            // Tự động sinh Slug nếu để trống
+            if (string.IsNullOrWhiteSpace(existingHangHoa.Slug))
+            {
+                existingHangHoa.Slug = GenerateSlug(existingHangHoa.TenHh);
+            }
+
+            // Nếu MetaTitle trống, gán mặc định là TenHh
+            if (string.IsNullOrWhiteSpace(existingHangHoa.MetaTitle))
+            {
+                existingHangHoa.MetaTitle = existingHangHoa.TenHh;
+            }
+
+            // Nếu MetaDescription trống, gán mặc định là MoTaDonVi hoặc MoTa
+            if (string.IsNullOrWhiteSpace(existingHangHoa.MetaDescription))
+            {
+                existingHangHoa.MetaDescription = !string.IsNullOrWhiteSpace(existingHangHoa.MoTaDonVi) ? existingHangHoa.MoTaDonVi : existingHangHoa.MoTa;
+            }
 
             // Nếu có upload ảnh mới
             if (Hinh != null && Hinh.Length > 0)
@@ -233,6 +273,43 @@ namespace VanPhongPhamOnline.Controllers.Admin
         {
             ViewBag.MenuLoai = new SelectList(_context.Loais.ToList(), "MaLoai", "TenLoai", hangHoa.MaLoai);
             ViewBag.NccList = new SelectList(_context.NhaCungCaps.ToList(), "MaNcc", "TenCongTy", hangHoa.MaNcc);
+        }
+
+        /// <summary>
+        /// Sinh slug từ tên sản phẩm (VD: "Bút bi Thiên Long" -> "but-bi-thien-long")
+        /// </summary>
+        private string GenerateSlug(string tenHangHoa)
+        {
+            if (string.IsNullOrWhiteSpace(tenHangHoa))
+                return string.Empty;
+
+            // Bảng映射 ký tự tiếng Việt có dấu thành không dấu
+            var vnChars = new[]
+            {
+                new { From = "áàảãạâấầẫậăắằẵặ", To = "a" },
+                new { From = "đ", To = "d" },
+                new { From = "éèẻẽẹêếềễệ", To = "e" },
+                new { From = "íìỉĩị", To = "i" },
+                new { From = "óòỏõọôốồỗộơớờỡợ", To = "o" },
+                new { From = "úùủũụưứừữự", To = "u" },
+                new { From = "ýỳỷỹỵ", To = "y" }
+            };
+
+            var slug = tenHangHoa.Trim().ToLower();
+
+            // Thay thế ký tự có dấu
+            foreach (var ch in vnChars)
+            {
+                foreach (var c in ch.From)
+                    slug = slug.Replace(c, ch.To[0]);
+            }
+
+            // Bỏ ký tự đặc biệt, chỉ giữ chữ cái, số, khoảng trắng, gạch ngang
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = Regex.Replace(slug, @"\s+", " ").Trim();
+            slug = slug.Replace(" ", "-");
+            slug = Regex.Replace(slug, @"-+", "-");
+            return slug.Trim('-');
         }
     }
 }

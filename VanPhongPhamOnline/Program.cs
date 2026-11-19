@@ -98,6 +98,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "product",
+    pattern: "san-pham/{slug}",
+    defaults: new { controller = "HangHoa", action = "DetailBySlug" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 

@@ -36,7 +36,8 @@ namespace VanPhongPhamOnline.Controllers
                 Hinh = p.Hinh ?? "",
                 MoTaNgan = p.MoTaDonVi ?? "",
                 TenLoai = p.MaLoaiNavigation.TenLoai,
-                SoLuongTon = p.SoLuongTon
+                SoLuongTon = p.SoLuongTon,
+                Slug = p.Slug
             }).ToList();
 
             /* Đưa thông tin phân trang vào ViewBag */
@@ -66,7 +67,8 @@ namespace VanPhongPhamOnline.Controllers
                 Hinh = p.Hinh ?? "",
                 MoTaNgan = p.MoTaDonVi ?? "",
                 TenLoai = p.MaLoaiNavigation.TenLoai,
-                SoLuongTon = p.SoLuongTon
+                SoLuongTon = p.SoLuongTon,
+                Slug = p.Slug
             });
 
             return View(result);
@@ -101,6 +103,43 @@ namespace VanPhongPhamOnline.Controllers
                 DiemDanhGia = 5
             };
             return View(result);
+        }
+
+        public IActionResult DetailBySlug(string slug)
+        {
+            LoadMenuLoai();
+
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                TempData["Message"] = "Không tìm thấy sản phẩm.";
+                return Redirect("/404");
+            }
+
+            var data = db.HangHoas
+                .Include(p => p.MaLoaiNavigation)
+                .SingleOrDefault(p => p.Slug == slug);
+            if (data == null)
+            {
+                TempData["Message"] = $"Không tìm thấy sản phẩm có slug '{slug}'";
+                return Redirect("/404");
+            }
+
+            var result = new HangHoaVM
+            {
+                MaHH = data.MaHh,
+                TenHH = data.TenHh,
+                DonGia = data.DonGia ?? 0,
+                ChiTiet = data.MoTa ?? string.Empty,
+                Hinh = data.Hinh ?? string.Empty,
+                MoTaNgan = data.MoTaDonVi ?? string.Empty,
+                TenLoai = data.MaLoaiNavigation.TenLoai,
+                SoLuongTon = data.SoLuongTon,
+                Slug = data.Slug,
+                MetaTitle = data.MetaTitle,
+                MetaDescription = data.MetaDescription,
+                DiemDanhGia = 5
+            };
+            return View("Detail", result);
         }
         private void LoadMenuLoai()
         {

@@ -6,16 +6,16 @@
     <div class="col-lg-4 col-md-6 col-sm-6 pb-1">
         <div class="product-item bg-light mb-4">
             <div class="product-img position-relative overflow-hidden">
-                <a asp-action="Detail" asp-controller="HangHoa" asp-route-id="@item.MaHH">
+                <a asp-action="DetailBySlug" asp-controller="HangHoa" asp-route-slug="@(!string.IsNullOrWhiteSpace(item.Slug) ? item.Slug : item.MaHH.ToString())">
                     <img class="img-fluid w-100" style="height:250px; object-fit:cover;" src="@Url.Content("~/Hinh/HangHoa/" + item.Hinh)" alt="@item.TenHH">
                 </a>
                 <div class="product-action">
                     <a class="btn btn-outline-dark btn-square" asp-action="AddToCart" asp-controller="Cart" asp-route-id="@item.MaHH"><i class="fa fa-shopping-cart"></i></a>
-                    <a class="btn btn-outline-dark btn-square" asp-action="Detail" asp-controller="HangHoa" asp-route-id="@item.MaHH"><i class="fa fa-search"></i></a>
+                    <a class="btn btn-outline-dark btn-square" asp-action="DetailBySlug" asp-controller="HangHoa" asp-route-slug="@(!string.IsNullOrWhiteSpace(item.Slug) ? item.Slug : item.MaHH.ToString())"><i class="fa fa-search"></i></a>
                 </div>
             </div>
             <div class="text-center py-4">
-                <a asp-action="Detail" asp-controller="HangHoa" asp-route-id="@item.MaHH" class="h6 text-decoration-none text-truncate">@item.TenHH</a>
+                <a asp-action="DetailBySlug" asp-controller="HangHoa" asp-route-slug="@(!string.IsNullOrWhiteSpace(item.Slug) ? item.Slug : item.MaHH.ToString())" class="h6 text-decoration-none text-truncate">@item.TenHH</a>
                 <p class="mb-2">
                     <span class="@(item.SoLuongTon > 0 ? "badge bg-success" : "badge bg-danger") px-2 py-1 small">
                         @(item.SoLuongTon > 0 ? $"Còn hàng ({item.SoLuongTon})" : "Hết hàng")
@@ -36,4 +36,4 @@
         </div>
     </div>
 }
-<!-- End Part of Product Item -->
+<!-- End of Product Item -->

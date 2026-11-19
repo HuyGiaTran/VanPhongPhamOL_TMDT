@@ -8,7 +8,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <title>Chi tiết hàng hóa</title>
+    <title>Chi tiết: @Model.TenHh</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     <style>
         body {
@@ -176,9 +176,25 @@
                 <div class="detail-value">@Html.DisplayFor(model => model.MoTa)</div>
             </div>
 
+            <div class="detail-row">
+                <div class="detail-label">Slug (URL thân thiện):</div>
+                <div class="detail-value">@Html.DisplayFor(model => model.Slug)</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Meta Title (SEO):</div>
+                <div class="detail-value">@Html.DisplayFor(model => model.MetaTitle)</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Meta Description (SEO):</div>
+                <div class="detail-value">@Html.DisplayFor(model => model.MetaDescription)</div>
+            </div>
+
             <div class="actions">
                 <a href="@Url.Action("Index", "QuanLyHangHoa")" class="back-link">← Quay lại danh sách</a>
                 <a href="@Url.Action("Edit", "QuanLyHangHoa", new { id = Model.MaHh })" class="edit-link">✏️ Chỉnh sửa</a>
+                <a href="@Url.Action("Detail", "HangHoa", new { id = Model.MaHh })" class="edit-link">👁️ Xem trên trang web</a>
             </div>
         </div>
     </div>
