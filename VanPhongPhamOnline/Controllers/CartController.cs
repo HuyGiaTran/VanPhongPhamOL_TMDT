@@ -311,6 +311,7 @@ namespace VanPhongPhamOnline.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.PaypalClientId = _paypalClient.ClientId;
+                ViewBag.CheckoutError = "Vui lòng kiểm tra lại thông tin đơn hàng. Một số trường bắt buộc chưa được nhập đúng.";
                 return View(cart);
             }
 
@@ -324,12 +325,8 @@ namespace VanPhongPhamOnline.Controllers
             var hoaDon = TaoHoaDon(model, cart, thanhToan, maVoucher);
             if (hoaDon == null)
             {
-                // Nếu lỗi không xác định khách hàng, redirect về login
-                if (string.IsNullOrEmpty(User.FindFirst("MaKH")?.Value))
-                {
-                    TempData["Message"] = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
-                    return RedirectToAction("DangNhap", "KhachHang", new { ReturnUrl = "/Cart/Checkout" });
-                }
+                ViewBag.PaypalClientId = _paypalClient.ClientId;
+                ViewBag.CheckoutError = TempData["Message"]?.ToString() ?? "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.";
                 return View(cart);
             }
 
@@ -381,48 +378,13 @@ namespace VanPhongPhamOnline.Controllers
                 ? User.FindFirst("DiaChi")?.Value
                 : model.DiaChi;
 
-            // Tính tiền giảm từ voucher (nếu có)
+            // Tính tiền giảm từ voucher (nếu có) - lấy từ session đã xác thực trước đó
             double giamGiaVoucher = 0;
-            if (!string.IsNullOrWhiteSpace(maVoucher))
+            string? maVoucherApplied = HttpContext.Session.GetString("MaVoucherApplied");
+            if (!string.IsNullOrWhiteSpace(maVoucherApplied))
             {
-                var voucher = db.Vouchers.FirstOrDefault(v =>
-                    (v.MaGiamGia == maVoucher || v.MaVoucher == maVoucher) &&
-                    v.TrangThai == true &&
-                    v.NgayBatDau <= DateTime.Now &&
-                    v.NgayKetThuc >= DateTime.Now &&
-                    v.SoLuong > 0);
-
-                if (voucher == null)
-                {
-                    TempData["Message"] = "Mã giảm giá không hợp lệ hoặc đã hết hạn.";
-                    return null;
-                }
-
-                // Kiểm tra điều kiện tối thiểu
-                double tongTienHang = cart.Sum(p => p.ThanhTien);
-                if (tongTienHang < voucher.DieuKienToiThieu)
-                {
-                    TempData["Message"] = $"Đơn hàng chưa đủ điều kiện áp dụng voucher (tối thiểu {voucher.DieuKienToiThieu:N0} VNĐ).";
-                    return null;
-                }
-
-                // Tính tiền giảm
-                if (voucher.LoaiGiamGia == 0) // Phần trăm
-                {
-                    giamGiaVoucher = tongTienHang * voucher.GiaTriGiam / 100;
-                }
-                else // Tiền mặt
-                {
-                    giamGiaVoucher = voucher.GiaTriGiam;
-                }
-
-                // Giảm giá không được vượt quá tổng tiền hàng
-                if (giamGiaVoucher > tongTienHang)
-                    giamGiaVoucher = tongTienHang;
-
-                // Giảm số lượng voucher
-                voucher.SoLuong--;
-                db.SaveChanges();
+                giamGiaVoucher = HttpContext.Session.GetInt32("GiamGiaVoucherApplied") ?? 0;
+                maVoucher = maVoucherApplied; // dùng mã đã xác thực từ session
             }
 
             var hoaDon = new HoaDon
@@ -463,6 +425,18 @@ namespace VanPhongPhamOnline.Controllers
             }
 
             db.SaveChanges();
+
+            // Giảm số lượng voucher sau khi đặt hàng thành công
+            if (!string.IsNullOrWhiteSpace(maVoucherApplied))
+            {
+                var voucher = db.Vouchers.FirstOrDefault(v =>
+                    (v.MaGiamGia == maVoucherApplied || v.MaVoucher == maVoucherApplied));
+                if (voucher != null && voucher.SoLuong > 0)
+                {
+                    voucher.SoLuong--;
+                    db.SaveChanges();
+                }
+            }
 
             HttpContext.Session.Remove(MySetting.CART_KEY);
             return hoaDon;
