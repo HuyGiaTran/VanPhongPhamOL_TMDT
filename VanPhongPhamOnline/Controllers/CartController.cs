@@ -40,7 +40,97 @@ namespace VanPhongPhamOnline.Controllers
                 item.SoLuongTon = hangHoa?.SoLuongTon ?? 0;
             }
             SaveCart(cart);
+
+            // Lấy thông tin voucher đã áp dụng từ session (nếu có)
+            var maVoucher = HttpContext.Session.GetString("MaVoucherApplied");
+            var giamGiaVoucher = HttpContext.Session.GetInt32("GiamGiaVoucherApplied") ?? 0;
+            ViewBag.MaVoucherApplied = maVoucher;
+            ViewBag.GiamGiaVoucherApplied = giamGiaVoucher;
+            ViewBag.VoucherMessage = TempData["VoucherMessage"] as string;
+            ViewBag.VoucherMessageType = TempData["VoucherMessageType"] as string ?? "success";
+
             return View(cart);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ApplyVoucher(string maGiamGia)
+        {
+            if (string.IsNullOrWhiteSpace(maGiamGia))
+            {
+                TempData["VoucherMessage"] = "Vui lòng nhập mã giảm giá.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            maGiamGia = maGiamGia.Trim();
+
+            var voucher = db.Vouchers.FirstOrDefault(v =>
+                v.MaGiamGia == maGiamGia &&
+                v.TrangThai == true &&
+                v.NgayBatDau <= DateTime.Now &&
+                v.NgayKetThuc >= DateTime.Now &&
+                v.SoLuong > 0);
+
+            if (voucher == null)
+            {
+                TempData["VoucherMessage"] = "Mã giảm giá không hợp lệ hoặc đã hết hạn.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            // Tính tiền hàng trong giỏ
+            var cart = Cart;
+            if (cart.Count == 0)
+            {
+                TempData["VoucherMessage"] = "Giỏ hàng trống, không thể áp dụng voucher.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            double tongTienHang = cart.Sum(p => p.ThanhTien);
+
+            // Kiểm tra điều kiện tối thiểu
+            if (tongTienHang < voucher.DieuKienToiThieu)
+            {
+                TempData["VoucherMessage"] = $"Đơn hàng chưa đủ điều kiện áp dụng voucher (tối thiểu {voucher.DieuKienToiThieu:N0} VNĐ).";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            // Tính tiền giảm
+            double giamGia = 0;
+            if (voucher.LoaiGiamGia == 0) // Phần trăm
+            {
+                giamGia = tongTienHang * voucher.GiaTriGiam / 100;
+            }
+            else // Tiền mặt
+            {
+                giamGia = voucher.GiaTriGiam;
+            }
+
+            if (giamGia > tongTienHang)
+                giamGia = tongTienHang;
+
+            // Lưu vào session
+            HttpContext.Session.SetString("MaVoucherApplied", voucher.MaGiamGia);
+            HttpContext.Session.SetInt32("GiamGiaVoucherApplied", (int)giamGia);
+
+            TempData["VoucherMessage"] = $"Áp dụng voucher '{voucher.TenVoucher}' thành công! Giảm {giamGia:N0} VNĐ.";
+            TempData["VoucherMessageType"] = "success";
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RemoveVoucher()
+        {
+            HttpContext.Session.Remove("MaVoucherApplied");
+            HttpContext.Session.Remove("GiamGiaVoucherApplied");
+            TempData["VoucherMessage"] = "Đã bỏ mã giảm giá.";
+            TempData["VoucherMessageType"] = "info";
+            return RedirectToAction("Index");
         }
 
         public IActionResult AddToCart(int id, int quantity = 1)
@@ -165,6 +255,13 @@ namespace VanPhongPhamOnline.Controllers
                 return Redirect("/");
             }
             ViewBag.PaypalClientId = _paypalClient.ClientId;
+
+            // Lấy thông tin voucher đã áp dụng từ session
+            var maVoucher = HttpContext.Session.GetString("MaVoucherApplied");
+            var giamGiaVoucher = HttpContext.Session.GetInt32("GiamGiaVoucherApplied") ?? 0;
+            ViewBag.MaVoucherApplied = maVoucher;
+            ViewBag.GiamGiaVoucherApplied = giamGiaVoucher;
+
             return View(Cart);
         }
 
@@ -187,11 +284,20 @@ namespace VanPhongPhamOnline.Controllers
 
             var thanhToan = string.IsNullOrWhiteSpace(model.PaymentMethod) ? "COD" : model.PaymentMethod;
 
-            var hoaDon = TaoHoaDon(model, cart, thanhToan, model.MaVoucher);
+            // Lấy mã voucher từ session nếu form không gửi
+            var maVoucher = !string.IsNullOrWhiteSpace(model.MaVoucher)
+                ? model.MaVoucher
+                : HttpContext.Session.GetString("MaVoucherApplied");
+
+            var hoaDon = TaoHoaDon(model, cart, thanhToan, maVoucher);
             if (hoaDon == null)
             {
                 return Content("Không xác định được khách hàng.");
             }
+
+            // Xóa voucher đã áp dụng khỏi session sau khi đặt hàng thành công
+            HttpContext.Session.Remove("MaVoucherApplied");
+            HttpContext.Session.Remove("GiamGiaVoucherApplied");
 
             return RedirectToAction("Success", "Cart");
         }

@@ -11,6 +11,10 @@
 
     <form id="checkoutForm" asp-action="Checkout" asp-controller="Cart" method="post">
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        @if (!string.IsNullOrEmpty(ViewBag.MaVoucherApplied))
+        {
+            <input type="hidden" name="MaVoucher" value="@ViewBag.MaVoucherApplied" />
+        }
         <div class="row g-5">
             <!-- Thông tin giao hàng -->
             <div class="col-lg-7">
@@ -84,9 +88,16 @@
                                 <td colspan="4" class="text-end fw-bold">Tiền ship</td>
                                 <td>@shipping.ToString("N0") VNĐ</td>
                             </tr>
+                            @if (!string.IsNullOrEmpty(ViewBag.MaVoucherApplied) && ViewBag.GiamGiaVoucherApplied > 0)
+                            {
+                                <tr class="text-success">
+                                    <td colspan="4" class="text-end fw-bold">Giảm giá (voucher):</td>
+                                    <td class="fw-bold">-@ViewBag.GiamGiaVoucherApplied.ToString("N0") VNĐ</td>
+                                </tr>
+                            }
                             <tr class="table-light">
                                 <td colspan="4" class="text-end fw-bold text-uppercase">Tổng tiền</td>
-                                <td class="fw-bold text-danger">@total.ToString("N0") VNĐ</td>
+                                <td class="fw-bold text-danger">@((subtotal - (ViewBag.GiamGiaVoucherApplied ?? 0) + shipping).ToString("N0")) VNĐ</td>
                             </tr>
                         </tbody>
                     </table>
