@@ -45,7 +45,7 @@ namespace VanPhongPhamOnline.Controllers.Admin
 
             ViewBag.Query = query;
 
-            return View(ViewFolder + "Index.cshtml", await loais.OrderBy(l => l.TenLoai).ToListAsync());
+            return View(ViewFolder + "Index.cshtml", await loais.OrderBy(l => l.MaLoai).ToListAsync());
         }
 
         // GET: Loai/Details/5
