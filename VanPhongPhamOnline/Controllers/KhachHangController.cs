@@ -55,7 +55,7 @@ namespace VanPhongPhamOnline.Controllers
                 var khachHang = _mapper.Map<KhachHang>(model);
                 khachHang.MaKh = model.MaKh;
                 khachHang.RandomKeyKh = MyUlti.GenerateRandomKey();
-                khachHang.MatKhauKh = model.MatKhauKh!.ToMd5Hash(khachHang.RandomKeyKh);
+                khachHang.MatKhauKh = BcryptHelper.HashPassword(model.MatKhauKh!);
 
                 if (Hinh != null)
                 {
@@ -96,7 +96,35 @@ namespace VanPhongPhamOnline.Controllers
             }
 
             var khachHang = db.KhachHangs.SingleOrDefault(kh => kh.EmailKh == model.UserName && !kh.IsDeleted);
-            if (khachHang == null || khachHang.MatKhauKh != model.Password.ToMd5Hash(khachHang.RandomKeyKh))
+            if (khachHang == null)
+            {
+                ModelState.AddModelError("", "Sai thông tin đăng nhập!");
+                return View();
+            }
+
+            // Kiểm tra mật khẩu: hỗ trợ bcrypt (mới) và MD5 (cũ cho dữ liệu chưa migrate)
+            bool passwordValid = false;
+            if (!string.IsNullOrEmpty(khachHang.MatKhauKh))
+            {
+                // Nếu là hash bcrypt (bắt đầu bằng $2)
+                if (khachHang.MatKhauKh.StartsWith("$2"))
+                {
+                    passwordValid = BCrypt.Net.BCrypt.Verify(model.Password, khachHang.MatKhauKh);
+                }
+                else
+                {
+                    // Hash MD5 cũ - kiểm tra tương thích
+                    passwordValid = khachHang.MatKhauKh == model.Password.ToMd5Hash(khachHang.RandomKeyKh);
+                    // Nếu đăng nhập thành công với MD5 cũ, tự động nâng cấp lên bcrypt
+                    if (passwordValid)
+                    {
+                        khachHang.MatKhauKh = BcryptHelper.HashPassword(model.Password);
+                        db.SaveChanges();
+                    }
+                }
+            }
+
+            if (!passwordValid)
             {
                 ModelState.AddModelError("", "Sai thông tin đăng nhập!");
                 return View();
@@ -203,6 +231,12 @@ namespace VanPhongPhamOnline.Controllers
                 if (!string.IsNullOrEmpty(model.Email))
                 {
                     kh.EmailKh = model.Email;
+                }
+
+                // Đổi mật khẩu nếu người dùng nhập mật khẩu mới
+                if (!string.IsNullOrWhiteSpace(model.MatKhau))
+                {
+                    kh.MatKhauKh = BcryptHelper.HashPassword(model.MatKhau);
                 }
 
                 if (model.Hinh != null)
@@ -343,8 +377,7 @@ namespace VanPhongPhamOnline.Controllers
                 return View(model);
             }
 
-            kh.RandomKeyKh = MyUlti.GenerateRandomKey();
-            kh.MatKhauKh = model.MatKhauMoi.ToMd5Hash(kh.RandomKeyKh);
+            kh.MatKhauKh = BcryptHelper.HashPassword(model.MatKhauMoi);
             db.SaveChanges();
 
             OtpHelper.Clear(HttpContext.Session);
