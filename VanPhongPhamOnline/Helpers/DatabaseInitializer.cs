@@ -194,6 +194,28 @@ namespace VanPhongPhamOnline.Helpers
 
                 await cmd.ExecuteNonQueryAsync(cancellationToken);
 
+                // Cap nhat cot MatKhauKH tu NVARCHAR(50) len NVARCHAR(255) de luu hash bcrypt
+                cmd.CommandText = @"
+                    DECLARE @colType NVARCHAR(100) = (
+                        SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
+                        WHERE TABLE_NAME = 'KhachHang' AND COLUMN_NAME = 'MatKhauKH'
+                    );
+                    IF @colType IS NOT NULL AND @colType LIKE 'nvarchar(50)%'
+                    BEGIN
+                        ALTER TABLE KhachHang ALTER COLUMN MatKhauKH NVARCHAR(255);
+                        PRINT 'Da cap nhat cot MatKhauKH thanh NVARCHAR(255)';
+                    END
+                    ELSE IF @colType IS NULL
+                    BEGIN
+                        PRINT 'Cot MatKhauKH khong ton tai';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot MatKhauKH da duoc cap nhat';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
                 _logger.LogInformation("Khoi tao co so du lieu hoan tat");
             }
             catch (Exception ex)

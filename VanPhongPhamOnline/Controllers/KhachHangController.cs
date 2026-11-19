@@ -35,18 +35,25 @@ namespace VanPhongPhamOnline.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // Thu thập tất cả lỗi validation để hiển thị
+                var errors = ModelState.Values.SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                TempData["RegisterError"] = string.Join("; ", errors);
                 return View(model);
             }
 
             if (db.KhachHangs.Any(kh => kh.MaKh == model.MaKh))
             {
                 ModelState.AddModelError(nameof(model.MaKh), "Tên đăng nhập đã tồn tại.");
+                TempData["RegisterError"] = "Tên đăng nhập đã tồn tại.";
                 return View(model);
             }
 
             if (db.KhachHangs.Any(kh => kh.EmailKh == model.EmailKh))
             {
                 ModelState.AddModelError(nameof(model.EmailKh), "Email đã được sử dụng.");
+                TempData["RegisterError"] = "Email đã được sử dụng.";
                 return View(model);
             }
 
@@ -71,6 +78,7 @@ namespace VanPhongPhamOnline.Controllers
             {
                 var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 ModelState.AddModelError("", "Lỗi khi lưu dữ liệu: " + errorMessage);
+                TempData["RegisterError"] = "Lỗi khi lưu dữ liệu: " + errorMessage;
                 return View(model);
             }
         }

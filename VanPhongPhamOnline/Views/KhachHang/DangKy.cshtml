@@ -7,6 +7,27 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <h1 class="text-center mb-4">Đăng Ký</h1>
+
+            @if (TempData["RegisterError"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mb-3">
+                    @TempData["RegisterError"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mb-3">
+                    @TempData["Success"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
             <form asp-action="DangKy" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label asp-for="MaKh" class="form-label">Tên đăng nhập<sup>*</sup></label>
