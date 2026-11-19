@@ -61,6 +61,7 @@
         <div class="col-lg-4">
             <!-- Form áp dụng voucher -->
             <form asp-action="ApplyVoucher" asp-controller="Cart" method="post" class="mb-3">
+                @Html.AntiForgeryToken()
                 <div class="input-group">
                     <input type="text" name="maGiamGia" class="form-control border-0 p-4" placeholder="Nhập mã giảm giá..." value="@ViewBag.MaVoucherApplied" />
                     <div class="input-group-append">

@@ -67,15 +67,39 @@ namespace VanPhongPhamOnline.Controllers
 
             // Tìm voucher theo cả Mã Voucher (khóa chính) hoặc Mã giảm giá (mã khách hàng nhập)
             var voucher = db.Vouchers.FirstOrDefault(v =>
-                (v.MaGiamGia == maGiamGia || v.MaVoucher == maGiamGia) &&
-                v.TrangThai == true &&
-                v.NgayBatDau <= DateTime.Now &&
-                v.NgayKetThuc >= DateTime.Now &&
-                v.SoLuong > 0);
+                (v.MaGiamGia == maGiamGia || v.MaVoucher == maGiamGia));
 
             if (voucher == null)
             {
-                TempData["VoucherMessage"] = "Mã giảm giá không hợp lệ hoặc đã hết hạn.";
+                TempData["VoucherMessage"] = "Mã giảm giá không tồn tại trong hệ thống.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            if (voucher.TrangThai != true)
+            {
+                TempData["VoucherMessage"] = "Mã giảm giá đã bị khóa, không thể sử dụng.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            if (voucher.NgayBatDau > DateTime.Now)
+            {
+                TempData["VoucherMessage"] = "Mã giảm giá chưa đến ngày sử dụng.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            if (voucher.NgayKetThuc < DateTime.Now)
+            {
+                TempData["VoucherMessage"] = "Mã giảm giá đã hết hạn sử dụng.";
+                TempData["VoucherMessageType"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            if (voucher.SoLuong <= 0)
+            {
+                TempData["VoucherMessage"] = "Mã giảm giá đã hết lượt sử dụng.";
                 TempData["VoucherMessageType"] = "error";
                 return RedirectToAction("Index");
             }
