@@ -62,6 +62,9 @@ CREATE TABLE Loai (
     MaLoai INT IDENTITY(1,1) PRIMARY KEY,
     TenLoai NVARCHAR(50) NOT NULL,
     TenLoaiAlias NVARCHAR(50),
+    Slug NVARCHAR(100),
+    MetaTitle NVARCHAR(200),
+    MetaDescription NVARCHAR(500),
     MoTa NVARCHAR(MAX),
     Hinh NVARCHAR(50)
 );
@@ -106,6 +109,9 @@ CREATE TABLE HangHoa (
     MaHH INT IDENTITY(1,1) PRIMARY KEY,
     TenHH NVARCHAR(50) NOT NULL,
     TenAlias NVARCHAR(50),
+    Slug NVARCHAR(100),
+    MetaTitle NVARCHAR(200),
+    MetaDescription NVARCHAR(500),
     MaLoai INT NOT NULL,
     MoTaDonVi NVARCHAR(50),
     DonGia FLOAT,
@@ -140,6 +146,20 @@ CREATE TABLE YeuThich (
     MoTa NVARCHAR(255),
     FOREIGN KEY (MaHH) REFERENCES HangHoa(MaHH),
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+CREATE TABLE Voucher (
+    MaVoucher NVARCHAR(50) NOT NULL PRIMARY KEY,
+    TenVoucher NVARCHAR(100) NOT NULL,
+    MaGiamGia NVARCHAR(20) NOT NULL,
+    LoaiGiamGia INT NOT NULL,
+    GiaTriGiam FLOAT NOT NULL,
+    NgayBatDau DATETIME NOT NULL,
+    NgayKetThuc DATETIME NOT NULL,
+    SoLuong INT NOT NULL,
+    DieuKienToiThieu FLOAT NOT NULL DEFAULT 0,
+    TrangThai BIT NOT NULL DEFAULT 1,
+    NgayTao DATETIME NOT NULL DEFAULT GETDATE()
 );
 
 CREATE TABLE GopY (

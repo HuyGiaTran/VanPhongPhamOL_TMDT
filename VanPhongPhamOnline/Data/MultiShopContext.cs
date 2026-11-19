@@ -39,6 +39,8 @@ public partial class MultiShopContext : DbContext
 
     public virtual DbSet<VChiTietHoaDon> VChiTietHoaDons { get; set; }
 
+    public virtual DbSet<Voucher> Vouchers { get; set; }
+
     public virtual DbSet<YeuThich> YeuThiches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -400,6 +402,32 @@ public partial class MultiShopContext : DbContext
             entity.HasOne(d => d.MaKhNavigation).WithMany(p => p.YeuThiches)
                 .HasForeignKey(d => d.MaKh)
                 .HasConstraintName("FK__YeuThich__MaKH__4222D4EF");
+        });
+
+        modelBuilder.Entity<Voucher>(entity =>
+        {
+            entity.HasKey(e => e.MaVoucher).HasName("PK__Voucher__7C7A3B7A1E3F4A2B");
+
+            entity.ToTable("Voucher");
+
+            entity.Property(e => e.MaVoucher)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MaVoucher");
+            entity.Property(e => e.TenVoucher)
+                .HasMaxLength(100)
+                .HasColumnName("TenVoucher");
+            entity.Property(e => e.MaGiamGia)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("MaGiamGia");
+            entity.Property(e => e.GiaTriGiam).HasColumnName("GiaTriGiam");
+            entity.Property(e => e.NgayBatDau).HasColumnType("datetime").HasColumnName("NgayBatDau");
+            entity.Property(e => e.NgayKetThuc).HasColumnType("datetime").HasColumnName("NgayKetThuc");
+            entity.Property(e => e.SoLuong).HasColumnName("SoLuong");
+            entity.Property(e => e.DieuKienToiThieu).HasColumnName("DieuKienToiThieu");
+            entity.Property(e => e.TrangThai).HasColumnName("TrangThai");
+            entity.Property(e => e.NgayTao).HasColumnType("datetime").HasColumnName("NgayTao");
         });
 
         OnModelCreatingPartial(modelBuilder);

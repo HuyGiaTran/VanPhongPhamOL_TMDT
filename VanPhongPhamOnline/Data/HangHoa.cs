@@ -12,6 +12,12 @@ public partial class HangHoa
 
     public string? TenAlias { get; set; }
 
+    public string? Slug { get; set; }
+
+    public string? MetaTitle { get; set; }
+
+    public string? MetaDescription { get; set; }
+
     public int MaLoai { get; set; }
 
     public string? MoTaDonVi { get; set; }

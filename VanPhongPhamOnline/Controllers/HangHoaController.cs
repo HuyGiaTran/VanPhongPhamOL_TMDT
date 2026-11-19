@@ -95,6 +95,9 @@ namespace VanPhongPhamOnline.Controllers
                 MoTaNgan = data.MoTaDonVi ?? string.Empty,
                 TenLoai = data.MaLoaiNavigation.TenLoai,
                 SoLuongTon = data.SoLuongTon,
+                Slug = data.Slug,
+                MetaTitle = data.MetaTitle,
+                MetaDescription = data.MetaDescription,
                 DiemDanhGia = 5
             };
             return View(result);

@@ -13,5 +13,8 @@
         public int SoDanhGia { get; set; }
         public int SoLuongTon { get; set; }
         public bool ConHang => SoLuongTon > 0;
+        public string? Slug { get; set; }
+        public string? MetaTitle { get; set; }
+        public string? MetaDescription { get; set; }
     }
 }

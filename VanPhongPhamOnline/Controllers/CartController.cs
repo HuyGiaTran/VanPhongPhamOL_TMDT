@@ -240,9 +240,44 @@ namespace VanPhongPhamOnline.Controllers
             double giamGiaVoucher = 0;
             if (!string.IsNullOrWhiteSpace(maVoucher))
             {
-                // TODO: Sau khi có bảng Voucher, validate mã tại đây
-                // Hiện tại chỉ lưu mã vào đơn hàng, chưa áp dụng giảm giá thực tế
-                giamGiaVoucher = 0;
+                var voucher = db.Vouchers.FirstOrDefault(v =>
+                    v.MaGiamGia == maVoucher &&
+                    v.TrangThai == true &&
+                    v.NgayBatDau <= DateTime.Now &&
+                    v.NgayKetThuc >= DateTime.Now &&
+                    v.SoLuong > 0);
+
+                if (voucher == null)
+                {
+                    TempData["Message"] = "Mã giảm giá không hợp lệ hoặc đã hết hạn.";
+                    return null;
+                }
+
+                // Kiểm tra điều kiện tối thiểu
+                double tongTienHang = cart.Sum(p => p.ThanhTien);
+                if (tongTienHang < voucher.DieuKienToiThieu)
+                {
+                    TempData["Message"] = $"Đơn hàng chưa đủ điều kiện áp dụng voucher (tối thiểu {voucher.DieuKienToiThieu:N0} VNĐ).";
+                    return null;
+                }
+
+                // Tính tiền giảm
+                if (voucher.LoaiGiamGia == 0) // Phần trăm
+                {
+                    giamGiaVoucher = tongTienHang * voucher.GiaTriGiam / 100;
+                }
+                else // Tiền mặt
+                {
+                    giamGiaVoucher = voucher.GiaTriGiam;
+                }
+
+                // Giảm giá không được vượt quá tổng tiền hàng
+                if (giamGiaVoucher > tongTienHang)
+                    giamGiaVoucher = tongTienHang;
+
+                // Giảm số lượng voucher
+                voucher.SoLuong--;
+                db.SaveChanges();
             }
 
             var hoaDon = new HoaDon

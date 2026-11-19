@@ -1,6 +1,7 @@
 ﻿@model VanPhongPhamOnline.ViewModels.HangHoaVM
 @{
-    ViewData["Title"] = "Detail";
+    ViewData["Title"] = string.IsNullOrEmpty(Model.MetaTitle) ? Model.TenHH : Model.MetaTitle;
+    var metaDesc = string.IsNullOrEmpty(Model.MetaDescription) ? Model.MoTaNgan : Model.MetaDescription;
 }
 
 <!-- Shop Detail Start -->
@@ -82,3 +83,12 @@
     </div>
 </div>
 <!-- Shop Detail End -->
+
+@section Scripts {
+    <meta name="description" content="@metaDesc" />
+    <meta name="keywords" content="@Model.TenHH, @Model.TenLoai, văn phòng phẩm" />
+    @if (!string.IsNullOrEmpty(Model.Slug))
+    {
+        <link rel="canonical" href="@Url.Action("Detail", "HangHoa", new { slug = Model.Slug, id = Model.MaHH })" />
+    }
+}

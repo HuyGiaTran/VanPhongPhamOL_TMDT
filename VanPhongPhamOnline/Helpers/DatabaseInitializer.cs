@@ -88,6 +88,112 @@ namespace VanPhongPhamOnline.Helpers
 
                 await cmd.ExecuteNonQueryAsync(cancellationToken);
 
+                // Tao bang Voucher neu chua co
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Voucher]') AND type in (N'U'))
+                    BEGIN
+                        CREATE TABLE Voucher (
+                            MaVoucher NVARCHAR(50) NOT NULL PRIMARY KEY,
+                            TenVoucher NVARCHAR(100) NOT NULL,
+                            MaGiamGia NVARCHAR(20) NOT NULL,
+                            LoaiGiamGia INT NOT NULL,
+                            GiaTriGiam FLOAT NOT NULL,
+                            NgayBatDau DATETIME NOT NULL,
+                            NgayKetThuc DATETIME NOT NULL,
+                            SoLuong INT NOT NULL,
+                            DieuKienToiThieu FLOAT NOT NULL DEFAULT 0,
+                            TrangThai BIT NOT NULL DEFAULT 1,
+                            NgayTao DATETIME NOT NULL DEFAULT GETDATE()
+                        );
+                        PRINT 'Da bang tao Voucher';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Bang Voucher da ton tai';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                // Them cot Slung, MetaTitle, MetaDescription vao HangHoa neu chua co
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'Slug' AND Object_ID = Object_ID(N'HangHoa'))
+                    BEGIN
+                        ALTER TABLE HangHoa ADD Slug NVARCHAR(100);
+                        PRINT 'Da them cot Slug vao HangHoa';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot Slug da ton tai trong HangHoa';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'MetaTitle' AND Object_ID = Object_ID(N'HangHoa'))
+                    BEGIN
+                        ALTER TABLE HangHoa ADD MetaTitle NVARCHAR(200);
+                        PRINT 'Da them cot MetaTitle vao HangHoa';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot MetaTitle da ton tai trong HangHoa';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'MetaDescription' AND Object_ID = Object_ID(N'HangHoa'))
+                    BEGIN
+                        ALTER TABLE HangHoa ADD MetaDescription NVARCHAR(500);
+                        PRINT 'Da them cot MetaDescription vao HangHoa';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot MetaDescription da ton tai trong HangHoa';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                // Them cot Slung, MetaTitle, MetaDescription vao Loai neu chua co
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'Slug' AND Object_ID = Object_ID(N'Loai'))
+                    BEGIN
+                        ALTER TABLE Loai ADD Slug NVARCHAR(100);
+                        PRINT 'Da them cot Slug vao Loai';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot Slug da ton tai trong Loai';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'MetaTitle' AND Object_ID = Object_ID(N'Loai'))
+                    BEGIN
+                        ALTER TABLE Loai ADD MetaTitle NVARCHAR(200);
+                        PRINT 'Da them cot MetaTitle vao Loai';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot MetaTitle da ton tai trong Loai';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'MetaDescription' AND Object_ID = Object_ID(N'Loai'))
+                    BEGIN
+                        ALTER TABLE Loai ADD MetaDescription NVARCHAR(500);
+                        PRINT 'Da them cot MetaDescription vao Loai';
+                    END
+                    ELSE
+                    BEGIN
+                        PRINT 'Cot MetaDescription da ton tai trong Loai';
+                    END";
+
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+
                 _logger.LogInformation("Khoi tao co so du lieu hoan tat");
             }
             catch (Exception ex)

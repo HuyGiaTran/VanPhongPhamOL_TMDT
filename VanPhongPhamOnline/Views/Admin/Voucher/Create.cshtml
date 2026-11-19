@@ -1,0 +1,116 @@
+﻿@model VanPhongPhamOnline.Data.Voucher
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Thêm voucher mới</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <style>
+        body { background: linear-gradient(120deg, #e3f2fd, #bbdefb); font-family: 'Segoe UI', sans-serif; padding: 40px; }
+        .container-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        h1 { color: #1976d2; font-weight: bold; margin-bottom: 30px; text-align: center; }
+        .form-group label { font-weight: 600; color: #333; margin-bottom: 8px; }
+        .form-control { border: 2px solid #e0e0e0; border-radius: 10px; padding: 12px 15px; }
+        .btn-submit { background: linear-gradient(45deg, #42a5f5, #1976d2); border: none; color: white; padding: 12px 30px; border-radius: 25px; font-weight: bold; width: 100%; margin-top: 20px; }
+        .btn-submit:hover { transform: translateY(-2px); color: white; }
+        .back-link { color: #1976d2; text-decoration: none; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .text-danger { font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="container-box">
+            <a href="@Url.Action("Index", "Voucher")" class="back-link">← Quay lại danh sách</a>
+
+            <h1>Thêm voucher mới</h1>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    Vui lòng kiểm tra lại thông tin.
+                </div>
+            }
+
+            <form asp-action="Create" asp-controller="Voucher" method="post">
+                <div class="form-group">
+                    <label asp-for="MaVoucher">Mã Voucher <span class="text-danger">*</span></label>
+                    <input asp-for="MaVoucher" class="form-control" required />
+                    <span asp-validation-for="MaVoucher" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="TenVoucher">Tên Voucher <span class="text-danger">*</span></label>
+                    <input asp-for="TenVoucher" class="form-control" required />
+                    <span asp-validation-for="TenVoucher" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="MaGiamGia">Mã giảm giá <span class="text-danger">*</span></label>
+                    <input asp-for="MaGiamGia" class="form-control" required />
+                    <span asp-validation-for="MaGiamGia" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LoaiGiamGia">Loại giảm giá <span class="text-danger">*</span></label>
+                    <select asp-for="LoaiGiamGia" class="form-control" required>
+                        <option value="0">Phần trăm (%)</option>
+                        <option value="1">Tiền mặt (VNĐ)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="GiaTriGiam">Giá trị giảm <span class="text-danger">*</span></label>
+                    <input asp-for="GiaTriGiam" type="number" class="form-control" required />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="NgayBatDau">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input asp-for="NgayBatDau" type="date" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="NgayKetThuc">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input asp-for="NgayKetThuc" type="date" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SoLuong">Số lượng sử dụng <span class="text-danger">*</span></label>
+                    <input asp-for="SoLuong" type="number" class="form-control" required />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DieuKienToiThieu">Điều kiện tối thiểu (VNĐ)</label>
+                    <input asp-for="DieuKienToiThieu" type="number" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="TrangThai">Trạng thái</label>
+                    <select asp-for="TrangThai" class="form-control">
+                        <option value="true">Hoạt động</option>
+                        <option value="false">Khóa</option>
+                    </select>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn-submit">Thêm voucher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>
