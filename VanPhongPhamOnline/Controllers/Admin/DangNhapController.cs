@@ -4,6 +4,7 @@ using System.Security.Claims;
 using VanPhongPhamOnline.Data;
 using VanPhongPhamOnline.Helpers;
 using VanPhongPhamOnline.ViewModels;
+using BCrypt.Net;
 
 namespace VanPhongPhamOnline.Controllers.Admin
 {
@@ -37,7 +38,35 @@ namespace VanPhongPhamOnline.Controllers.Admin
                 return View(LoginView);
 
             var nv = _context.NhanViens.FirstOrDefault(x => x.EmailNv == model.UserName);
-            if (nv == null || nv.MatKhauNv != model.Password.ToMd5Hash(nv.RandomKeyNv))
+            if (nv == null)
+            {
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
+                return View(LoginView);
+            }
+
+            // Kiểm tra mật khẩu: hỗ trợ bcrypt (mới) và MD5 (cũ cho dữ liệu chưa migrate)
+            bool passwordValid = false;
+            if (!string.IsNullOrEmpty(nv.MatKhauNv))
+            {
+                // Nếu là hash bcrypt (bắt đầu bằng $2)
+                if (nv.MatKhauNv.StartsWith("$2"))
+                {
+                    passwordValid = BCrypt.Net.BCrypt.Verify(model.Password, nv.MatKhauNv);
+                }
+                else
+                {
+                    // Hash MD5 cũ - kiểm tra tương thích
+                    passwordValid = nv.MatKhauNv == model.Password.ToMd5Hash(nv.RandomKeyNv);
+                    // Nếu đăng nhập thành công với MD5 cũ, tự động nâng cấp lên bcrypt
+                    if (passwordValid)
+                    {
+                        nv.MatKhauNv = BcryptHelper.HashPassword(model.Password);
+                        _context.SaveChanges();
+                    }
+                }
+            }
+
+            if (!passwordValid)
             {
                 ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
                 return View(LoginView);
@@ -174,8 +203,7 @@ namespace VanPhongPhamOnline.Controllers.Admin
                 return View(DatLaiMatKhauView, model);
             }
 
-            nv.RandomKeyNv = MyUlti.GenerateRandomKey();
-            nv.MatKhauNv = model.MatKhauMoi.ToMd5Hash(nv.RandomKeyNv);
+            nv.MatKhauNv = BcryptHelper.HashPassword(model.MatKhauMoi);
             _context.SaveChanges();
 
             OtpHelper.Clear(HttpContext.Session);
