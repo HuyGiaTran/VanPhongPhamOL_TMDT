@@ -147,8 +147,7 @@ namespace VanPhongPhamOnline.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public IActionResult RemoveVoucher()
         {
             HttpContext.Session.Remove("MaVoucherApplied");
